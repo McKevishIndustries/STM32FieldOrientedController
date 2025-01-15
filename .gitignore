@@ -48,4 +48,5 @@
 
 # Ignore all project specific directories
 /build
- 
+/cmake-build-debug
+/.idea 
