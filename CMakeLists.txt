@@ -14,6 +14,7 @@ set(CPU_PARAMETERS
     -mfloat-abi=hard)
 
 set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32f446xx.s)
+
 set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/stm32f446retx_flash.ld)
 # ##############################################################################
 set(EXECUTABLE ${CMAKE_PROJECT_NAME})
@@ -34,18 +35,16 @@ set(CUBEMX_INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Include)
 
 set(PROJECT_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_DIR})
+    ${PROJECT_DIR}/Inc)
 
 # Sources
 file(GLOB_RECURSE STM32CUBEMX_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/Core/*.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/*.c)
 
-
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
-    ${PROJECT_DIR}/*.cpp
-    ${PROJECT_DIR}/*.c)
+    ${PROJECT_DIR}/Src/*.cpp
+    ${PROJECT_DIR}/Src/*.c)
 
 # Executable files
 add_executable(${EXECUTABLE}
