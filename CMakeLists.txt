@@ -58,8 +58,10 @@ target_compile_definitions(${EXECUTABLE} PRIVATE
     USE_HAL_DRIVER)
 
 # Add header directories (AFTER add_executable !!)
+target_include_directories(${EXECUTABLE} SYSTEM PRIVATE
+    ${CUBEMX_INCLUDE_DIRECTORIES})
+
 target_include_directories(${EXECUTABLE} PRIVATE
-    ${CUBEMX_INCLUDE_DIRECTORIES}
     ${PROJECT_INCLUDE_DIRECTORIES})
 
 # Compiler and linker options
