@@ -23,5 +23,5 @@ make -j4
 ## How to flash the project to the microcontroller
 
 ```bash
-openocd  -f  ../stm_nucleo_446re.cfg -c "tcl_port disabled" -c "gdb_port disabled" -c "tcl_port disabled" -c "program \"stm32fieldorientedcontroller.elf\"" -c reset -c shutdown
+openocd  -f  ../board/stm_nucleo_446re.cfg -c "tcl_port disabled" -c "gdb_port disabled" -c "tcl_port disabled" -c "program \"stm32fieldorientedcontroller.elf\"" -c reset -c shutdown
 ```

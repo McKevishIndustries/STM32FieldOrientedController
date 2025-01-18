@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 # ##############################################################################
 # Edit your MCU information up to the next border
 project(stm32fieldorientedcontroller)
-set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Project)
+set(APPLICATION_DIR ${CMAKE_CURRENT_SOURCE_DIR}/application)
 
 set(MCU_FAMILY STM32F4xx)
 set(MCU_MODEL STM32F446xx)
@@ -13,9 +13,9 @@ set(CPU_PARAMETERS
     -mfpu=fpv4-sp-d16
     -mfloat-abi=hard)
 
-set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32f446xx.s)
+set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/board/startup_stm32f446xx.s)
 
-set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/stm32f446retx_flash.ld)
+set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/board/stm32f446retx_flash.ld)
 # ##############################################################################
 set(EXECUTABLE ${CMAKE_PROJECT_NAME})
 enable_language(C CXX ASM)
@@ -28,29 +28,29 @@ set(CMAKE_CXX_EXTENSIONS ON)
 
 # Headers
 set(CUBEMX_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Include)
+    ${CMAKE_CURRENT_SOURCE_DIR}/board/Core/Inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/board/Drivers/${MCU_FAMILY}_HAL_Driver/Inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/board/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
+    ${CMAKE_CURRENT_SOURCE_DIR}/board/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
+    ${CMAKE_CURRENT_SOURCE_DIR}/board/Drivers/CMSIS/Include)
 
-set(PROJECT_INCLUDE_DIRECTORIES
-    ${PROJECT_DIR}/Inc)
+set(APPLICATION_INCLUDE_DIRECTORIES
+    ${APPLICATION_DIR}/Inc)
 
 # Sources
 file(GLOB_RECURSE STM32CUBEMX_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/*.c)
+    ${CMAKE_CURRENT_SOURCE_DIR}/board/Core/*.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/board/Drivers/*.c)
 
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
-    ${PROJECT_DIR}/Src/*.cpp
-    ${PROJECT_DIR}/Src/*.c)
+    ${APPLICATION_DIR}/Src/*.cpp
+    ${APPLICATION_DIR}/Src/*.c)
 
 # Executable files
 add_executable(${EXECUTABLE}
     ${STM32CUBEMX_SOURCES} 
-    ${PROJECT_SOURCES}
-    ${STARTUP_SCRIPT})
+    ${APPLICATION_SOURCES}
+    ${APPLICATION_SCRIPT})
 
 # Embedded macros(defines)
 target_compile_definitions(${EXECUTABLE} PRIVATE
@@ -62,7 +62,7 @@ target_include_directories(${EXECUTABLE} SYSTEM PRIVATE
     ${CUBEMX_INCLUDE_DIRECTORIES})
 
 target_include_directories(${EXECUTABLE} PRIVATE
-    ${PROJECT_INCLUDE_DIRECTORIES})
+    ${APPLICATION_INCLUDE_DIRECTORIES})
 
 # Compiler and linker options
 target_compile_options(${EXECUTABLE} PRIVATE
