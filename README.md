@@ -25,3 +25,22 @@ make -j4
 ```bash
 openocd  -f  ../board/stm_nucleo_446re.cfg -c "tcl_port disabled" -c "gdb_port disabled" -c "tcl_port disabled" -c "program \"stm32fieldorientedcontroller.elf\"" -c reset -c shutdown
 ```
+
+## How to run the unit tests
+
+```bash
+cmake -B build-tests -DCMAKE_BUILD_TYPE=Release
+
+cd build-tests
+
+make -j4
+
+./tests
+```
+
+expected results:
+
+```bash
+===============================================================================
+All tests passed (6 assertions in 1 test case)
+```

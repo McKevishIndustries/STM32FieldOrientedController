@@ -31,78 +31,107 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-# Headers
-set(CUBEMX_INCLUDE_DIRECTORIES
-    ${CUBEMX_DIR}/Core/Inc
-    ${CUBEMX_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc
-    ${CUBEMX_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
-    ${CUBEMX_DIR}/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
-    ${CUBEMX_DIR}/Drivers/CMSIS/Include)
+if(CMAKE_CROSSCOMPILING)
+    message(STATUS "Cross compiling for board...")
 
-set(PROJECT_INCLUDE_DIRECTORIES
-    ${PROJECT_DIR}/Inc)
+    # Headers
+    set(CUBEMX_INCLUDE_DIRECTORIES
+        ${CUBEMX_DIR}/Core/Inc
+        ${CUBEMX_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc
+        ${CUBEMX_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
+        ${CUBEMX_DIR}/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
+        ${CUBEMX_DIR}/Drivers/CMSIS/Include)
 
-# Sources
-file(GLOB_RECURSE STM32CUBEMX_SOURCES
-    ${CUBEMX_DIR}/Core/*.c
-    ${CUBEMX_DIR}/Drivers/*.c)
+    set(PROJECT_INCLUDE_DIRECTORIES
+        ${PROJECT_DIR}/Inc)
 
-file(GLOB_RECURSE PROJECT_SOURCES
-    ${PROJECT_DIR}/Src/*.cpp
-    ${PROJECT_DIR}/Src/*.c)
+    # Sources
+    file(GLOB_RECURSE STM32CUBEMX_SOURCES
+        ${CUBEMX_DIR}/Core/*.c
+        ${CUBEMX_DIR}/Drivers/*.c)
 
-# Executable files
-add_executable(${EXECUTABLE}
-    ${STM32CUBEMX_SOURCES} 
-    ${PROJECT_SOURCES}
-    ${STARTUP_SCRIPT})
+    file(GLOB_RECURSE PROJECT_SOURCES
+        ${PROJECT_DIR}/Src/*.cpp
+        ${PROJECT_DIR}/Src/*.c)
 
-# Embedded macros(defines)
-target_compile_definitions(${EXECUTABLE} PRIVATE
-    ${MCU_MODEL}
-    USE_HAL_DRIVER)
+    # Executable files
+    add_executable(${EXECUTABLE}
+        ${STM32CUBEMX_SOURCES}
+        ${PROJECT_SOURCES}
+        ${STARTUP_SCRIPT})
 
-# Add header directories (AFTER add_executable !!)
-target_include_directories(${EXECUTABLE} PRIVATE
-    ${CUBEMX_INCLUDE_DIRECTORIES}
-    ${PROJECT_INCLUDE_DIRECTORIES})
+    # Embedded macros(defines)
+    target_compile_definitions(${EXECUTABLE} PRIVATE
+        ${MCU_MODEL}
+        USE_HAL_DRIVER)
 
-# Compiler and linker options
-target_compile_options(${EXECUTABLE} PRIVATE
-    ${CPU_PARAMETERS}
-    -Wall
-    -Wextra
-    -Wpedantic
-    -Wno-unused-parameter
-    $<$<COMPILE_LANGUAGE:CXX>:
-        -Wno-volatile
-        -Wold-style-cast
-        -Wuseless-cast
-        -Wsuggest-override>
-    $<$<CONFIG:Debug>:-Og -g3 -ggdb>
-    $<$<CONFIG:Release>:-Og -g0>)
+    # Add header directories (AFTER add_executable !!)
+    target_include_directories(${EXECUTABLE} PRIVATE
+        ${CUBEMX_INCLUDE_DIRECTORIES}
+        ${PROJECT_INCLUDE_DIRECTORIES})
 
-target_link_options(${EXECUTABLE} PRIVATE
-    -T${MCU_LINKER_SCRIPT}
-    ${CPU_PARAMETERS}
-    -Wl,-Map=${CMAKE_PROJECT_NAME}.map
-    --specs=nosys.specs
-    -Wl,--start-group
-    -lc
-    -lm
-    -lstdc++
-    -Wl,--end-group
-    -Wl,--print-memory-usage)
+    # Compiler and linker options
+    target_compile_options(${EXECUTABLE} PRIVATE
+        ${CPU_PARAMETERS}
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Wno-unused-parameter
+        $<$<COMPILE_LANGUAGE:CXX>:
+            -Wno-volatile
+            -Wold-style-cast
+            -Wuseless-cast
+            -fno-exceptions
+            -fno-rtti
+            -Wsuggest-override>
+        $<$<CONFIG:Debug>:-Og -g3 -ggdb>
+        $<$<CONFIG:Release>:-Og -g0>)
 
-add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
-    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>)
+    target_link_options(${EXECUTABLE} PRIVATE
+        -T${MCU_LINKER_SCRIPT}
+        ${CPU_PARAMETERS}
+        -Wl,-Map=${CMAKE_PROJECT_NAME}.map
+        --specs=nosys.specs
+        -Wl,--start-group
+        -lc
+        -lm
+        -lstdc++
+        -Wl,--end-group
+        -Wl,--print-memory-usage)
 
-add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${EXECUTABLE}>
-    ${EXECUTABLE}.hex
-    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}>
-    ${EXECUTABLE}.bin)
+    add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
+        COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${EXECUTABLE}>)
 
-# clean target
-set_target_properties(${EXECUTABLE} PROPERTIES ADDITIONAL_CLEAN_FILES
-    "${PROJECT_NAME}.bin;${PROJECT_NAME}.hex;${PROJECT_NAME}.map")
+    add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
+        COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${EXECUTABLE}>
+        ${EXECUTABLE}.hex
+        COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}>
+        ${EXECUTABLE}.bin)
+
+    # clean target
+    set_target_properties(${EXECUTABLE} PROPERTIES ADDITIONAL_CLEAN_FILES
+            "${PROJECT_NAME}.bin;${PROJECT_NAME}.hex;${PROJECT_NAME}.map")
+
+else()
+    message(STATUS "Compiling for PC...")
+
+    include(FetchContent)
+
+    FetchContent_Declare(
+            Catch2
+            GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+            GIT_TAG v3.5.2
+    )
+
+    FetchContent_MakeAvailable(Catch2)
+
+    # Create executable
+    add_executable(tests
+        test/src/test_calculator.cpp)
+
+    target_include_directories(tests PRIVATE
+        application/inc)
+
+    target_link_libraries(tests PRIVATE
+        Catch2::Catch2WithMain)
+endif()
