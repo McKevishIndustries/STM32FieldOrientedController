@@ -1,10 +1,19 @@
 # Template CMakeLists.txt configuration for STM32 MCUS
 cmake_minimum_required(VERSION 3.12)
-# ##############################################################################
-# Edit your MCU information up to the next border
-project(stm32fieldorientedcontroller)
-set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Project)
 
+# project name and name of the executable
+project(STM32FOC)
+set(EXECUTABLE ${CMAKE_PROJECT_NAME})
+
+# Set all used project directories
+set(CUBEMX_DIR ${CMAKE_CURRENT_SOURCE_DIR}/board/CubeMX)
+set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/application)
+
+# set startup script and linker script
+set(STARTUP_SCRIPT ${CUBEMX_DIR}/startup_stm32f446xx.s)
+set(MCU_LINKER_SCRIPT ${CUBEMX_DIR}/stm32f446retx_flash.ld)
+
+# set mcu specific data
 set(MCU_FAMILY STM32F4xx)
 set(MCU_MODEL STM32F446xx)
 set(CPU_PARAMETERS
@@ -13,11 +22,7 @@ set(CPU_PARAMETERS
     -mfpu=fpv4-sp-d16
     -mfloat-abi=hard)
 
-set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/startup_stm32f446xx.s)
-
-set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/CubeMX/stm32f446retx_flash.ld)
-# ##############################################################################
-set(EXECUTABLE ${CMAKE_PROJECT_NAME})
+# set programming language
 enable_language(C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -28,21 +33,21 @@ set(CMAKE_CXX_EXTENSIONS ON)
 
 # Headers
 set(CUBEMX_INCLUDE_DIRECTORIES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Include)
+    ${CUBEMX_DIR}/Core/Inc
+    ${CUBEMX_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc
+    ${CUBEMX_DIR}/Drivers/${MCU_FAMILY}_HAL_Driver/Inc/Legacy
+    ${CUBEMX_DIR}/Drivers/CMSIS/Device/ST/${MCU_FAMILY}/Include
+    ${CUBEMX_DIR}/Drivers/CMSIS/Include)
 
 set(PROJECT_INCLUDE_DIRECTORIES
     ${PROJECT_DIR}/Inc)
 
 # Sources
 file(GLOB_RECURSE STM32CUBEMX_SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Core/*.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/*.c)
+    ${CUBEMX_DIR}/Core/*.c
+    ${CUBEMX_DIR}/Drivers/*.c)
 
-file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
+file(GLOB_RECURSE PROJECT_SOURCES
     ${PROJECT_DIR}/Src/*.cpp
     ${PROJECT_DIR}/Src/*.c)
 
@@ -97,3 +102,7 @@ add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     ${EXECUTABLE}.hex
     COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}>
     ${EXECUTABLE}.bin)
+
+# clean target
+set_target_properties(${EXECUTABLE} PROPERTIES ADDITIONAL_CLEAN_FILES
+    "${PROJECT_NAME}.bin;${PROJECT_NAME}.hex;${PROJECT_NAME}.map")
