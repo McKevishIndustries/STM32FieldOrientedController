@@ -1,0 +1,6 @@
+services:
+  stm32_builder:
+    build: .
+    volumes:
+      - ../:/foc/
+    working_dir: /foc
