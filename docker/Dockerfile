@@ -5,6 +5,6 @@ RUN apt-get update && apt-get install -y \
                         cmake \
                         gcc-arm-none-eabi \
                         gdb \
-                        git \
+                        git
 
 RUN ln -s -f gcc-12 /usr/bin/gcc
